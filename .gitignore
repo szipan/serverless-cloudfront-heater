@@ -1,3 +1,4 @@
 functions/CloudFrontVisitor/target/*
 functions/DdbTableIntlr/target/*
 functions/EdgeLocMetadataIntlr/target/*
+.aws-sam/*

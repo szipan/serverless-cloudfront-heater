@@ -1,14 +1,10 @@
 {
-    "Comment": "A state machine that does mock stock trading.",
+    "Comment": "A state machine that warm up a cloudfront distribution with a s3 bucket as origin.",
     "StartAt": "Initialize DDB",
     "States": {
         "Initialize DDB": {
             "Type": "Task",
-            "Resource": "arn:aws:states:::lambda:invoke",
-            "Parameters": {
-                "Payload.$": "$",
-                "FunctionName": "arn:aws:lambda:us-east-1:370148876259:function:warm-up-cdn-initialize-ddb:$LATEST"
-            },
+            "Resource": "${DdbInitializeFunctionArn}",
             "Retry": [
                 {
                     "ErrorEquals": [
@@ -27,11 +23,7 @@
         },
         "Prepare edge location metadata": {
             "Type": "Task",
-            "Resource": "arn:aws:states:::lambda:invoke",
-            "Parameters": {
-                "Payload.$": "$",
-                "FunctionName": "arn:aws:lambda:us-east-1:370148876259:function:warm-up-cdn-prepare-edge-loc-metadata:$LATEST"
-            },
+            "Resource": "${EdgeLocMetadataIntlrFunctionArn}",
             "Retry": [
                 {
                     "ErrorEquals": [
@@ -59,12 +51,7 @@
                 "States": {
                     "Warm up edge locations": {
                         "Type": "Task",
-                        "Resource": "arn:aws:states:::lambda:invoke",
-                        "OutputPath": "$.Payload",
-                        "Parameters": {
-                            "Payload.$": "$",
-                            "FunctionName": "arn:aws:lambda:us-east-1:370148876259:function:warm-up-cdn-heat-up-edge:$LATEST"
-                        },
+                        "Resource": "${EdgeLocHeatupFunctionArn}",
                         "Retry": [
                             {
                                 "ErrorEquals": [

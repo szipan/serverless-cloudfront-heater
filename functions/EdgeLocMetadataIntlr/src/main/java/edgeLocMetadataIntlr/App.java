@@ -64,8 +64,10 @@ public class App implements RequestHandler<Map<String, String>, String> {
             logger.log(e.getMessage());
         } finally {
             try {
-                reader.close();
-                inputStream.close();
+                if (reader != null)
+                    reader.close();
+                if (inputStream != null)
+                    inputStream.close();
             } catch (IOException e) {
                 logger.log(e.getMessage());
             }
