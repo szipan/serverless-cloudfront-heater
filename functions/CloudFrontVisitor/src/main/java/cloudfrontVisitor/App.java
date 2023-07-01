@@ -36,8 +36,7 @@ public class App implements RequestHandler<Map<String, String>, String> {
         for (Map<String, AttributeValue> item : items) {
             url.append(distEdgeDomainName).append(item.get("s3Key").getS());
             try {
-                logger.log("test...");
-                // this.access(url.toString());
+                this.access(url.toString());
             } catch (Exception e) {
                 logger.log(e.getMessage());
             }
