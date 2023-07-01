@@ -1,9 +1,8 @@
 package cloudfrontVisitor;
 
-import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -33,10 +32,14 @@ public class App implements RequestHandler<Map<String, String>, String> {
         StringBuilder url = new StringBuilder();
 
         List<Map<String, AttributeValue>> items = result.getItems();
+        HttpGet request;
+        CloseableHttpClient client = HttpClientBuilder.create().build();
         for (Map<String, AttributeValue> item : items) {
             url.append(distEdgeDomainName).append(item.get("s3Key").getS());
+
             try {
-                this.access(url.toString());
+                request = new HttpGet(URLEncoder.encode(url.toString(), "utf-8"));
+                client.execute(request);
             } catch (Exception e) {
                 logger.log(e.getMessage());
             }
@@ -44,11 +47,5 @@ public class App implements RequestHandler<Map<String, String>, String> {
         }
 
         return "Finish warm up cache.";
-    }
-
-    private void access(String url) throws ClientProtocolException, IOException {
-        HttpGet request = new HttpGet(url);
-        CloseableHttpClient client = HttpClientBuilder.create().build();
-        client.execute(request);
     }
 }
