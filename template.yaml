@@ -82,7 +82,7 @@ Resources:
 Outputs:
   CloudFrontHeaterApi:
     Description: "API Gateway endpoint URL for Prod stage for CloudFront warm-up function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/warmup/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/warmup"
   CloudFrontWarmupStateMachineArn:
     Description: "CloudFront Warm Up State machine ARN"
     Value: !Ref CloudFrontWarmupStateMachine
