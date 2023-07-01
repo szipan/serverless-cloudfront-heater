@@ -1,0 +1,101 @@
+{
+    "Comment": "A state machine that does mock stock trading.",
+    "StartAt": "Initialize DDB",
+    "States": {
+        "Initialize DDB": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-east-1:370148876259:function:warm-up-cdn-initialize-ddb:$LATEST"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Lambda.ServiceException",
+                        "Lambda.AWSLambdaException",
+                        "Lambda.SdkClientException",
+                        "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 2
+                }
+            ],
+            "Next": "Prepare edge location metadata",
+            "ResultPath": null
+        },
+        "Prepare edge location metadata": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "Payload.$": "$",
+                "FunctionName": "arn:aws:lambda:us-east-1:370148876259:function:warm-up-cdn-prepare-edge-loc-metadata:$LATEST"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Lambda.ServiceException",
+                        "Lambda.AWSLambdaException",
+                        "Lambda.SdkClientException",
+                        "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 2
+                }
+            ],
+            "Next": "Warm up edge locations in batch",
+            "ResultPath": null
+        },
+        "Warm up edge locations in batch": {
+            "Type": "Map",
+            "ItemProcessor": {
+                "ProcessorConfig": {
+                    "Mode": "DISTRIBUTED",
+                    "ExecutionType": "STANDARD"
+                },
+                "StartAt": "Warm up edge locations",
+                "States": {
+                    "Warm up edge locations": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::lambda:invoke",
+                        "OutputPath": "$.Payload",
+                        "Parameters": {
+                            "Payload.$": "$",
+                            "FunctionName": "arn:aws:lambda:us-east-1:370148876259:function:warm-up-cdn-heat-up-edge:$LATEST"
+                        },
+                        "Retry": [
+                            {
+                                "ErrorEquals": [
+                                    "Lambda.ServiceException",
+                                    "Lambda.AWSLambdaException",
+                                    "Lambda.SdkClientException",
+                                    "Lambda.TooManyRequestsException"
+                                ],
+                                "IntervalSeconds": 2,
+                                "MaxAttempts": 6,
+                                "BackoffRate": 2
+                            }
+                        ],
+                        "End": true
+                    }
+                }
+            },
+            "Label": "Warmupedgelocationsinbatch",
+            "MaxConcurrency": 1000,
+            "End": true,
+            "ItemReader": {
+                "Resource": "arn:aws:states:::s3:getObject",
+                "ReaderConfig": {
+                    "InputType": "CSV",
+                    "CSVHeaderLocation": "FIRST_ROW"
+                },
+                "Parameters": {
+                    "Bucket.$": "$.edge_location_bucket",
+                    "Key.$": "$.edge_location_Metadata_file_key"
+                }
+            }
+        }
+    }
+}

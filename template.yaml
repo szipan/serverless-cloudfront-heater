@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  warm-up-cloudfront-from-s3
+
+  Sample SAM Template for warm-up-cloudfront-from-s3
+
+Resources:
+  CloudFrontWarmupStateMachine:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: statemachine/cloudfrontWarmup.asl.json
+      DefinitionSubstitutions:
+        DdbInitializeFunctionArn: !GetAtt DdbInitializeFunction.Arn
+        EdgeLocMetadataInitializeFunctionArn: !GetAtt EdgeLocMetadataInitializeFunction.Arn
+        EdgeLocHeatupFunctionArn: !GetAtt EdgeLocHeatupFunction.Arn
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - LambdaInvokePolicy:
+            FunctionName: !Ref DdbInitializeFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref EdgeLocMetadataInitializeFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref EdgeLocHeatupFunction
+
+  DdbInitializeFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
+    Properties:
+      CodeUri: functions/DdbTableIntlr
+      Handler: DdbTableIntlr.src.main.java.ddbInitializer.App::handleRequest
+      Runtime: java11
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 # More info about tiered compilation https://aws.amazon.com/blogs/compute/optimizing-aws-lambda-function-performance-for-java/
+
+  EdgeLocMetadataIntlr:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/EdgeLocMetadataIntlr
+      Handler: EdgeLocMetadataIntlr.src.main.java.edgeLocMetadataIntlr.App::handleRequest
+      Runtime: java11
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 # More info about tiered compilation https://aws.amazon.com/blogs/compute/optimizing-aws-lambda-function-performance-for-java/
+
+  EdgeLocHeatupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/CloudFrontVisitor
+      Handler: CloudFrontVisitor.src.main.java.CloudFrontVisitor.App::handleRequest
+      Runtime: java11
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 # More info about tiered compilation https://aws.amazon.com/blogs/compute/optimizing-aws-lambda-function-performance-for-java/
+
+Outputs:
+  # StockTradingStateMachineHourlyTradingSchedule is an implicit Schedule event rule created out of Events key under Serverless::StateMachine
+  # Find out more about other implicit resources you can reference within SAM
+  # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-generated-resources.html
+  CloudFrontWarmupStateMachineArn:
+    Description: "CloudFront Warm Up State machine ARN"
+    Value: !Ref CloudFrontWarmupStateMachine
+  CloudFrontWarmupStateMachineRoleArn:
+    Description: "IAM Role created for CloudFront Warm Up State machine based on the specified SAM Policy Templates"
+    Value: !GetAtt CloudFrontWarmupStateMachineRole.Arn
