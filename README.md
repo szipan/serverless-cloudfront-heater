@@ -2,15 +2,15 @@
 
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders:
 
-- functions - Code for the application's Lambda functions to check the value of, buy, or sell shares of a stock. It also contains unit tests for the Lambda functions' application code.
-- statemachines - Definition for the state machine that orchestrates the stock trading workflow.
+- functions - Code for the application's Lambda functions to collect all prefixes in certain S3 bucket and certain prefix, generate metadata for all the edge locations on which CloufFront should be warmed up and heat up a specific edge location.
+- statemachines - Definition for the state machine that orchestrates the whole warm-up process.
 - template.yaml - A template that defines the application's AWS resources.
 
-This application creates a stock trading workflow which runs on a pre-defined schedule (note that the schedule is disabled by default to avoid incurring charges). It demonstrates the power of Step Functions to orchestrate Lambda functions and other AWS resources to form complex and robust workflows, coupled with event-driven development using Amazon EventBridge.
+This application creates a CloudFront warm-up workflow which runs behind an API Gateway.
 
 AWS Step Functions lets you coordinate multiple AWS services into serverless workflows so you can build and update apps quickly. Using Step Functions, you can design and run workflows that stitch together services, such as AWS Lambda, AWS Fargate, and Amazon SageMaker, into feature-rich applications.
 
-The application uses several AWS resources, including Step Functions state machines, Lambda functions and an EventBridge rule trigger. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
+The application uses several AWS resources, including Step Functions state machines, Lambda functions and API Gateway. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
 If you prefer to use an integrated development environment (IDE) to build and test the Lambda functions within your application, you can use the AWS Toolkit. The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started:
 
@@ -73,7 +73,7 @@ To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs`
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-warm-up-cloudfront-from-s3$ sam logs -n StockCheckerFunction --stack-name warm-up-cloudfront-from-s3 --tail
+warm-up-cloudfront-from-s3$ sam logs -n DdbInitializeFunction --stack-name warm-up-cloudfront-from-s3 --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).

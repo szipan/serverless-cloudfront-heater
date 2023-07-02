@@ -1,55 +1,71 @@
 {
     "Comment": "A state machine that warm up a cloudfront distribution with a s3 bucket as origin.",
-    "StartAt": "Initialize DDB",
+    "StartAt": "Parallel",
     "States": {
-        "Initialize DDB": {
-            "Type": "Task",
-            "Resource": "${DdbInitializeFunctionArn}",
-            "Retry": [
+        "Parallel": {
+            "Type": "Parallel",
+            "Next": "Warm up edge locations in parallel",
+            "Branches": [
                 {
-                    "ErrorEquals": [
-                        "Lambda.ServiceException",
-                        "Lambda.AWSLambdaException",
-                        "Lambda.SdkClientException",
-                        "Lambda.TooManyRequestsException"
-                    ],
-                    "IntervalSeconds": 2,
-                    "MaxAttempts": 6,
-                    "BackoffRate": 2
-                }
-            ],
-            "Next": "Prepare edge location metadata",
-            "ResultPath": null
-        },
-        "Prepare edge location metadata": {
-            "Type": "Task",
-            "Resource": "${EdgeLocMetadataIntlrFunctionArn}",
-            "Retry": [
+                    "StartAt": "Initialize DDB",
+                    "States": {
+                        "Initialize DDB": {
+                            "Type": "Task",
+                            "Resource": "${DdbInitializeFunctionArn}",
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "End": true,
+                            "ResultPath": null
+                        }
+                    }
+                },
                 {
-                    "ErrorEquals": [
-                        "Lambda.ServiceException",
-                        "Lambda.AWSLambdaException",
-                        "Lambda.SdkClientException",
-                        "Lambda.TooManyRequestsException"
-                    ],
-                    "IntervalSeconds": 2,
-                    "MaxAttempts": 6,
-                    "BackoffRate": 2
+                    "StartAt": "Prepare edge location metadata",
+                    "States": {
+                        "Prepare edge location metadata": {
+                            "Type": "Task",
+                            "Resource": "${EdgeLocMetadataIntlrFunctionArn}",
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "End": true,
+                            "ResultPath": null
+                        }
+                    }
                 }
-            ],
-            "Next": "Warm up edge locations in batch",
-            "ResultPath": null
+            ]
         },
-        "Warm up edge locations in batch": {
+        "Warm up edge locations in parallel": {
             "Type": "Map",
             "ItemProcessor": {
                 "ProcessorConfig": {
                     "Mode": "DISTRIBUTED",
                     "ExecutionType": "STANDARD"
                 },
-                "StartAt": "Warm up edge locations",
+                "StartAt": "Warm up single edge location",
                 "States": {
-                    "Warm up edge locations": {
+                    "Warm up single edge location": {
                         "Type": "Task",
                         "Resource": "${EdgeLocHeatupFunctionArn}",
                         "Retry": [
@@ -69,7 +85,7 @@
                     }
                 }
             },
-            "Label": "Warmupedgelocationsinbatch",
+            "Label": "Warmupedgelocationsinparallel",
             "MaxConcurrency": 1000,
             "End": true,
             "ItemReader": {
@@ -79,8 +95,8 @@
                     "CSVHeaderLocation": "FIRST_ROW"
                 },
                 "Parameters": {
-                    "Bucket.$": "$.edge_location_bucket",
-                    "Key.$": "$.edge_location_Metadata_file_key"
+                    "Bucket.$": "$[0].edge_location_bucket",
+                    "Key.$": "$[0].edge_location_Metadata_file_key"
                 }
             }
         }

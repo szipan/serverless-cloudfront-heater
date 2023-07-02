@@ -10,11 +10,10 @@ The code for this application will differ based on the runtime, but the path to 
 
 AWS Toolkit For Visual Studio Code supports local debugging for serverless applications through VS Code's debugger. Since this application was created by the AWS Toolkit, launch configurations for all included handlers have been generated and can be found in the menu next to the Run button:
 
-* warm-up-cloudfront-from-s3:StockTradingStateMachine
-* warm-up-cloudfront-from-s3:StockCheckerFunction (java11)
-* warm-up-cloudfront-from-s3:StockSellerFunction (java11)
-* warm-up-cloudfront-from-s3:StockBuyerFunction (java11)
-* warm-up-cloudfront-from-s3:TransactionTable
+* warm-up-cloudfront-from-s3:CloudFrontWarmupStateMachine
+* warm-up-cloudfront-from-s3:DdbInitializeFunction (java11)
+* warm-up-cloudfront-from-s3:EdgeLocMetadataIntlrFunction (java11)
+* warm-up-cloudfront-from-s3:EdgeLocHeatupFunction (java11)
 
 You can debug the Lambda handlers locally by adding a breakpoint to the source file, then running the launch configuration. This works by using Docker on your local machine.
 
