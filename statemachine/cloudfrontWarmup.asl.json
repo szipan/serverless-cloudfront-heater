@@ -31,8 +31,27 @@
                     }
                 },
                 {
-                    "StartAt": "Prepare edge location metadata",
+                    "StartAt": "Extract edge codes",
                     "States": {
+                        "Extract edge codes": {
+                            "Type": "Task",
+                            "Resource": "${EdgeCodeExtractorFunctionArn}",
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 6,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Next": "Prepare edge location metadata",
+                            "ResultPath": "$.edge_code_file_key"
+                        },
                         "Prepare edge location metadata": {
                             "Type": "Task",
                             "Resource": "${EdgeLocMetadataIntlrFunctionArn}",

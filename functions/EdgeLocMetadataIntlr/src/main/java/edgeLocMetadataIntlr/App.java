@@ -24,7 +24,7 @@ public class App implements RequestHandler<Map<String, String>, String> {
 
         String fileKeyTableRegion = input.get("region");
         String edgeLocBucket = input.get("edge_location_bucket");
-        String edgeLocCodeListFileKey = input.get("edge_location_code_list_file_key");
+        String edgeLocCodeListFileKey = input.get("edge_code_file_key");
         String edgeLocMetadataFileKey = input.get("edge_location_Metadata_file_key");
         String fileKeyTable = input.get("file_key_table");
         String cloudfrontDistroUrl = input.get("distribution_domain_name");
@@ -49,7 +49,8 @@ public class App implements RequestHandler<Map<String, String>, String> {
             S3Object s3object = s3Client.getObject(new GetObjectRequest(edgeLocBucket, edgeLocCodeListFileKey));
             inputStream = s3object.getObjectContent();
             reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line = reader.readLine();
+            String line = reader.readLine(); // Skip the table header.
+            line = reader.readLine();
             EdgeMetadata edgeMetadata = new EdgeMetadata();
             edgeMetadata.setRegion(fileKeyTableRegion);
             edgeMetadata.setTableName(fileKeyTable);

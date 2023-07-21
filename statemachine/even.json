@@ -5,6 +5,5 @@
     "file_key_table": "zipan-prefix-keys",
     "distribution_domain_name": "d10ss1qk7pexe4.cloudfront.net",
     "edge_location_bucket": "edge-locations",
-    "edge_location_code_list_file_key": "edge_code.csv",
     "edge_location_Metadata_file_key": "edge_info.csv"
 }

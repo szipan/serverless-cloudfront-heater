@@ -19,6 +19,7 @@ Resources:
         DdbInitializeFunctionArn: !GetAtt DdbInitializeFunction.Arn
         EdgeLocMetadataIntlrFunctionArn: !GetAtt EdgeLocMetadataIntlrFunction.Arn
         EdgeLocHeatupFunctionArn: !GetAtt EdgeLocHeatupFunction.Arn
+        EdgeCodeExtractorFunctionArn: !GetAtt EdgeCodeExtractorFunction.Arn
       Events:
         CloudFrontHeater:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -32,6 +33,8 @@ Resources:
             FunctionName: !Ref EdgeLocMetadataIntlrFunction
         - LambdaInvokePolicy:
             FunctionName: !Ref EdgeLocHeatupFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref EdgeCodeExtractorFunction
         - AmazonS3FullAccess
         - AWSStepFunctionsFullAccess
 
@@ -75,6 +78,21 @@ Resources:
       Policies:
         - AmazonS3FullAccess
         - AmazonDynamoDBFullAccess
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 # More info about tiered compilation https://aws.amazon.com/blogs/compute/optimizing-aws-lambda-function-performance-for-java/
+
+  EdgeCodeExtractorFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html
+    Properties:
+      CodeUri: functions/EdgeCodeExtractor
+      Handler: edgeCodeExtractor.App::handleRequest
+      Runtime: java11
+      Architectures:
+        - x86_64
+      Policies:
+        - AmazonS3FullAccess
+        - AmazonAthenaFullAccess
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 # More info about tiered compilation https://aws.amazon.com/blogs/compute/optimizing-aws-lambda-function-performance-for-java/
