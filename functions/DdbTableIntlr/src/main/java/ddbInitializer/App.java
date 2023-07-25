@@ -19,7 +19,6 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Handler for requests to Lambda function.
@@ -54,18 +53,7 @@ public class App implements RequestHandler<Map<String, String>, String> {
             table.putItem(item);
         }
 
-        Map<String, String> result = new HashMap();
-        result.put("initializeDdbResult",
-                "All keys under" + coldFileBucketName + '\\' + coldFilePrefix + " have been inserted into dynamodb.");
-        ObjectMapper objectMapper = new ObjectMapper();
-        String resulString = "";
-        LambdaLogger logger = context.getLogger();
-        try {
-            resulString = objectMapper.writeValueAsString(result);
-        } catch (Exception e) {
-            logger.log(e.getMessage());
-        }
-        return resulString;
+        return "All keys under" + coldFileBucketName + '\\' + coldFilePrefix + " have been inserted into dynamodb.";
     }
 
     // If table exists, delete and re-create it, or else create it.

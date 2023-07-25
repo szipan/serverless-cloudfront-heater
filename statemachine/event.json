@@ -5,7 +5,7 @@
     "file_key_table": "zipan-prefix-keys",
     "distribution_domain_name": "d10ss1qk7pexe4.cloudfront.net",
     "edge_location_bucket": "edge-locations",
-    "edge_location_Metadata_file_key": "edge_info.csv",
+    "edge_location_metadata_file_key": "edge_info.csv",
     "athena_database_name": "",
     "athena_table_name": ""
 }

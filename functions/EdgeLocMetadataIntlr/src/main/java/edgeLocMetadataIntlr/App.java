@@ -25,7 +25,7 @@ public class App implements RequestHandler<Map<String, String>, String> {
         String fileKeyTableRegion = input.get("region");
         String edgeLocBucket = input.get("edge_location_bucket");
         String edgeLocCodeListFileKey = input.get("edge_code_file_key");
-        String edgeLocMetadataFileKey = input.get("edge_location_Metadata_file_key");
+        String edgeLocMetadataFileKey = input.get("edge_location_metadata_file_key");
         String fileKeyTable = input.get("file_key_table");
         String cloudfrontDistroUrl = input.get("distribution_domain_name");
 
